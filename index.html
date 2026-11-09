@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CalmNotes</title>
+<meta name="description" content="Just you, your thoughts. Nothing in between. A calm, distraction-free notepad that lives in your browser.">
+<meta name="theme-color" content="#0d0d0e">
+<meta name="color-scheme" content="dark">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="CalmNotes">
+<meta property="og:description" content="Just you, your thoughts. Nothing in between.">
+<meta property="og:image" content="/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CalmNotes">
+<meta name="twitter:description" content="Just you, your thoughts. Nothing in between.">
+<meta name="twitter:image" content="/og.png">
+
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CalmNotes">
+
+<link rel="preload" href="/fonts/roboto-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="chrome">
+    <button id="clear" class="quiet" title="Start a blank page">clear</button>
+    <button id="menuBtn" class="quiet" aria-haspopup="true" aria-expanded="false" title="Menu">···</button>
+  </header>
+
+  <nav id="menu" class="menu" hidden>
+    <div class="menu-meta" id="count">0 words</div>
+    <button data-act="copy">copy all</button>
+    <button data-act="download">download .txt</button>
+    <button data-act="install" hidden>install app</button>
+    <button data-act="about">about &amp; shortcuts</button>
+  </nav>
+
+  <main>
+    <textarea id="pad" spellcheck="true" placeholder="breathe. then write." aria-label="Your note" autofocus></textarea>
+  </main>
+
+  <p id="tagline" class="tagline">calmnotes — just you, your thoughts. nothing in between.</p>
+  <div id="status" role="status" aria-live="polite"></div>
+
+  <div id="about" class="sheet" hidden>
+    <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+      <h1 id="aboutTitle">CalmNotes</h1>
+      <p class="muted">Just you, your thoughts. Nothing in between.</p>
+      <p>One page to think on. It saves as you type and lives only in this browser &mdash; nothing is sent anywhere, and there is no account.</p>
+      <dl>
+        <dt><kbd>1.</kbd> or <kbd>-</kbd> then space</dt><dd>start a list</dd>
+        <dt><kbd>Enter</kbd></dt><dd>next item &middot; on an empty item, step out</dd>
+        <dt><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></dt><dd>nest / un-nest (1 &rarr; a &rarr; i)</dd>
+        <dt><kbd>Ctrl/⌘</kbd>+<kbd>Z</kbd></dt><dd>undo, even after clear</dd>
+        <dt><kbd>Ctrl/⌘</kbd>+<kbd>S</kbd></dt><dd>save now (it already autosaves)</dd>
+        <dt><kbd>Esc</kbd></dt><dd>close menus</dd>
+      </dl>
+      <p class="muted small">Notes stay in this browser. Clearing your browser data erases them &mdash; use <em>download .txt</em> to keep a copy.</p>
+      <button id="aboutClose" class="quiet">close</button>
+    </div>
+  </div>
+
+  <script src="/js/app.js" defer></script>
+</body>
+</html>
