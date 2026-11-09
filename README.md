@@ -25,7 +25,7 @@ python3 -m http.server 8000
 
 It's plain static files, so any static host works. On Vercel: import the repo, leave the framework as **Other** with no build command, and deploy. `vercel.json` sets caching and security headers.
 
-After the first deploy, put your real domain into the `og:image` and `twitter:image` tags in `index.html` (for example `https://calmnotes.vercel.app/og.png`). Some link previews (WhatsApp, X) need the full URL.
+After the first deploy, put your real domain into the `og:image` and `twitter:image` tags in `index.html` (already set to `https://calmnotes.vercel.app/og.png`). Some link previews (WhatsApp, X) need the full URL.
 
 ## Shipping an update
 
