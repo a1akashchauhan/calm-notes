@@ -1,6 +1,6 @@
 /* CalmNotes service worker — makes the app open instantly and work offline.
    Bump VERSION whenever you change files, so visitors get the update. */
-const VERSION = 'calmnotes-v3';
+const VERSION = 'calmnotes-v4';
 const SHELL = [
   '/',
   '/index.html',
@@ -8,6 +8,7 @@ const SHELL = [
   '/js/app.js',
   '/fonts/roboto-mono-latin.woff2',
   '/fonts/roboto-mono-latin-ext.woff2',
+  '/favicon.ico',
   '/icons/favicon.svg',
   '/icons/icon-192.png',
   '/manifest.webmanifest'
