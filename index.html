@@ -45,7 +45,8 @@
   </nav>
 
   <main>
-    <textarea id="pad" spellcheck="true" placeholder="breathe. then write." aria-label="Your note" autofocus></textarea>
+    <div id="pad" class="ed" contenteditable="true" spellcheck="true" role="textbox" aria-multiline="true" aria-label="Your note" data-placeholder="breathe. then write."></div>
+    <span id="meas" class="ed-type meas" aria-hidden="true"></span>
   </main>
 
   <p id="tagline" class="tagline">calmnotes — just you, your thoughts. nothing in between.</p>

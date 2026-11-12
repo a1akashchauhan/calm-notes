@@ -35,12 +35,19 @@ body { font-family: var(--mono); -webkit-font-smoothing: antialiased; min-height
 
 /* writing surface */
 main { max-width: 780px; margin: 0 auto; padding: 18vh 40px 45vh; }
-#pad {
-  display: block; width: 100%; min-height: 50vh; padding: 0; border: 0; outline: 0; resize: none; overflow: hidden;
-  background: transparent; color: var(--ink); caret-color: var(--caret);
-  font: 400 clamp(19px, 0.6vw + 13px, 23px)/1.95 var(--mono); letter-spacing: .015em; word-spacing: .08em; white-space: pre-wrap;
+.ed-type {
+  font: 400 clamp(19px, 0.6vw + 13px, 23px)/1.95 var(--mono); letter-spacing: .015em; word-spacing: .08em;
 }
-#pad::placeholder { color: var(--muted); }
+#pad {
+  position: relative; min-height: 50vh; outline: 0; color: var(--ink); caret-color: var(--caret);
+  white-space: pre-wrap; overflow-wrap: break-word;
+  font: 400 clamp(19px, 0.6vw + 13px, 23px)/1.95 var(--mono); letter-spacing: .015em; word-spacing: .08em;
+}
+#pad > div { margin: 0; }
+#pad.empty::before {
+  content: attr(data-placeholder); position: absolute; left: 0; top: 0; color: var(--muted); pointer-events: none;
+}
+.meas { position: absolute; left: -9999px; top: 0; visibility: hidden; white-space: pre; pointer-events: none; }
 
 /* chrome that fades while you write */
 .chrome, .tagline { transition: opacity .9s ease; }
@@ -110,7 +117,7 @@ kbd { font: inherit; border: 1px solid var(--line); border-radius: 4px; padding:
 
 @media (max-width: 600px) {
   main { padding: 13vh 20px 45vh; }
-  #pad { font-size: 17px; line-height: 1.9; }
+  #pad, .ed-type { font-size: 17px; line-height: 1.9; }
   dl { grid-template-columns: 1fr; gap: 0; }
   dd { margin-bottom: 8px; }
   .sheet-card { padding: 24px 22px 18px; }
