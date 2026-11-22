@@ -7,7 +7,10 @@
   const menuBtn = $('menuBtn'), menu = $('menu'), about = $('about');
   const KEY = 'calmnotes.pages', OLD_KEY = 'calmnotes.pad', MAX_PAGES = 9;
   const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
-  const MOD = isMac ? '⌘' : 'ctrl';
+  const MOD = isMac ? '⌘' : 'ctrl', ALT = isMac ? '⌥' : 'alt+';
+  // Show the keys this keyboard actually has.
+  document.querySelectorAll('.k-mod').forEach(k => { k.textContent = isMac ? '⌘' : 'Ctrl'; });
+  document.querySelectorAll('.k-alt').forEach(k => { k.textContent = isMac ? '⌥ option' : 'Alt'; });
 
   /* ---------------- storage ---------------- */
   const store = (() => {
@@ -66,13 +69,13 @@
       const name = pageLabel(p.text);
       b.className = 'page' + (i === cur ? ' on' : '');
       b.textContent = name;
-      b.title = name + (i < 9 ? '  \u00b7  alt+' + (i + 1) : '');
+      b.title = name + (i < 9 ? '  \u00b7  ' + ALT + (i + 1) : '');
       if (i === cur) b.setAttribute('aria-current', 'page');
       b.addEventListener('click', () => switchTo(i));
       box.appendChild(b);
     });
     const add = document.createElement('button');
-    add.className = 'page add'; add.textContent = '+'; add.title = 'new page  \u00b7  alt+n';
+    add.className = 'page add'; add.textContent = '+'; add.title = 'new page  \u00b7  ' + ALT + 'N';
     add.setAttribute('aria-label', 'New page');
     add.addEventListener('click', addPage);
     box.appendChild(add);
