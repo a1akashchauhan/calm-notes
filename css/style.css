@@ -45,7 +45,13 @@ main { max-width: 780px; margin: 0 auto; padding: 18vh 40px 45vh; }
 }
 #pad > div { margin: 0; }
 #pad { font-variant-emoji: text; }          /* keep ☐ ☑ as quiet text, never emoji */
-#pad > div.done { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; text-decoration-color: rgba(205,200,191,.35); }
+#pad > div.done { position: relative; color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; text-decoration-color: rgba(205,200,191,.35); }
+/* A clean ☑ drawn over the indent, box and space, so the strike runs through the words only. */
+#pad > div.done::before {
+  content: "\2611"; position: absolute; top: 0; left: 0; width: var(--box-w, 1.5em);
+  padding-left: var(--box-x, 0); box-sizing: border-box; white-space: pre;
+  text-indent: 0; background: var(--bg); color: var(--muted); pointer-events: none; text-decoration: none;
+}
 #pad.over-box { cursor: pointer; }
 #pad.empty::before {
   content: attr(data-placeholder); position: absolute; left: 0; top: 0; color: var(--muted); pointer-events: none;

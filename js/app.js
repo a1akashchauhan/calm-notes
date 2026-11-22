@@ -192,7 +192,13 @@
     for (const d of lines()) {
       const t = d.textContent, n = prefixLen(t);
       const w = n ? Math.round(measure(t.slice(0, n)) * 100) / 100 : 0;
-      d.classList.toggle('done', t.trimStart().startsWith(TICK + ' '));
+      const done = t.trimStart().startsWith(TICK + ' ');
+      d.classList.toggle('done', done);
+      if (done) {                               // where the box sits, so the strike can skip it
+        const ind = measure(t.match(/^ */)[0]);
+        d.style.setProperty('--box-x', ind + 'px');
+        d.style.setProperty('--box-w', w + 'px');
+      }
       if (d.dataset.h === String(w)) continue;
       d.dataset.h = String(w);
       if (w) { d.style.paddingLeft = w + 'px'; d.style.textIndent = -w + 'px'; }
