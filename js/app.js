@@ -189,6 +189,7 @@
     for (const d of lines()) {
       const t = d.textContent, n = prefixLen(t);
       const w = n ? Math.round(measure(t.slice(0, n)) * 100) / 100 : 0;
+      d.classList.toggle('done', t.trimStart().startsWith(TICK + ' '));
       if (d.dataset.h === String(w)) continue;
       d.dataset.h = String(w);
       if (w) { d.style.paddingLeft = w + 'px'; d.style.textIndent = -w + 'px'; }
@@ -214,12 +215,17 @@
   const toRoman = n => { let s = ''; for (const [v, r] of [[100, 'c'], [90, 'xc'], [50, 'l'], [40, 'xl'], [10, 'x'], [9, 'ix'], [5, 'v'], [4, 'iv'], [1, 'i']]) while (n >= v) { s += r; n -= v; } return s; };
   const fromRoman = s => { const v = { i: 1, v: 5, x: 10, l: 50, c: 100 }; let n = 0; for (let i = 0; i < s.length; i++) { const a = v[s[i]], b = v[s[i + 1]] || 0; n += a < b ? -a : a; } return n; };
   const label = (n, l) => ({ num: String(n), alpha: toAlpha(n), roman: toRoman(n) })[styleOf(l)];
-  const marker = (kind, l, n) => kind === 'bullet' ? BUL[l % 3] : label(n, l) + '.';
+  const BOX = '\u2610', TICK = '\u2611';            // ☐ ☑
+  const marker = (kind, l, n, mark) =>
+    kind === 'todo' ? (mark || BOX) : kind === 'bullet' ? BUL[l % 3] : label(n, l) + '.';
 
   function parse(line) {
     const sp = line.match(/^ */)[0].length, lvl = Math.floor(sp / 4), indent = ' '.repeat(sp), rest = line.slice(sp);
-    const b = rest.match(/^([•◦▪\-*]) (.*)$/s);
-    if (b) return { kind: 'bullet', lvl, indent, prefixLen: sp + 2, body: b[2] };
+    const b = rest.match(/^([•◦▪\-*\u2610\u2611]) (.*)$/s);
+    if (b) {
+      const todo = b[1] === BOX || b[1] === TICK;
+      return { kind: todo ? 'todo' : 'bullet', mark: b[1], done: b[1] === TICK, lvl, indent, prefixLen: sp + 2, body: b[2] };
+    }
     const st = styleOf(lvl), o = rest.match(new RegExp('^(' + PAT[st] + ')\\. (.*)$', 's'));
     if (o) {
       const t = o[1], n = st === 'num' ? parseInt(t, 10) : st === 'alpha' ? fromAlpha(t) : fromRoman(t);
@@ -259,7 +265,7 @@
   function reindent(div, p, dir, off) {
     const lvl = p.lvl + dir, rel = Math.max(0, off - p.prefixLen);
     if (lvl < 0) { replaceIn(div, 0, p.prefixLen, ''); select(div, rel); renumberFrom(div); return; }
-    const pre = IND.repeat(lvl) + marker(p.kind, lvl, siblingBefore(div, lvl) + 1) + ' ';
+    const pre = IND.repeat(lvl) + marker(p.kind, lvl, siblingBefore(div, lvl) + 1, p.mark) + ' ';
     replaceIn(div, 0, p.prefixLen, pre);
     select(div, pre.length + rel);
     renumberFrom(div);
@@ -283,7 +289,7 @@
         } else {
           exec('insertParagraph');
           const nd = caret().div;
-          replaceIn(nd, 0, 0, p.indent + marker(p.kind, p.lvl, (p.n || 0) + 1) + ' ');
+          replaceIn(nd, 0, 0, p.indent + marker(p.kind, p.lvl, (p.n || 0) + 1, BOX) + ' ');
           renumberFrom(nd);
         }
         afterEdit();
@@ -306,7 +312,37 @@
     }
   });
 
+  // Tick or untick a checklist line (undoable).
+  function toggle(div) {
+    const p = parse(div.textContent);
+    if (!p || p.kind !== 'todo') return false;
+    const keep = caret();
+    replaceIn(div, p.indent.length, p.indent.length + 1, p.done ? BOX : TICK);
+    if (keep && keep.div === div) select(div, keep.off); else select(div, div.textContent.length);
+    afterEdit();
+    return true;
+  }
+  // Is this pointer position on a line's box?
+  function boxAt(e) {
+    const d = e.target;
+    if (!d || d.parentNode !== ed) return null;
+    const p = parse(d.textContent);
+    if (!p || p.kind !== 'todo') return null;
+    const r = d.getBoundingClientRect(), x = e.clientX - r.left;
+    const lh = parseFloat(getComputedStyle(d).lineHeight) || 36;
+    const from = measure(p.indent), to = measure(p.indent + p.mark + ' ');
+    return (e.clientY - r.top <= lh && x >= from - 6 && x <= to) ? d : null;
+  }
+  ed.addEventListener('mousedown', e => { if (boxAt(e)) e.preventDefault(); });
+  ed.addEventListener('click', e => { const d = boxAt(e); if (d) { e.preventDefault(); toggle(d); } });
+  ed.addEventListener('mousemove', e => ed.classList.toggle('over-box', !!boxAt(e)));
+
   ed.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !e.altKey && !e.isComposing) {
+      const c = caret();
+      if (c && toggle(c.div)) e.preventDefault();
+      return;
+    }
     if (e.key !== 'Tab' || e.isComposing || e.metaKey || e.ctrlKey || e.altKey) return;
     e.preventDefault();
     const c = caret();
@@ -320,12 +356,12 @@
   ed.addEventListener('input', e => {
     if (busy) return;
     if (normalize()) { const c = caret(); if (!c) { const l = ed.lastElementChild; select(l, l.textContent.length); } }
-    // "- " or "* " at the start of a line becomes a bullet
+    // "- " or "* " at the start of a line becomes a bullet, "t. " a checklist box
     if (e.inputType === 'insertText' && e.data === ' ') {
       const c = caret();
       if (c) {
-        const m = c.div.textContent.slice(0, c.off).match(/^( *)[-*] $/);
-        if (m) replaceIn(c.div, 0, c.off, m[1] + BUL[Math.floor(m[1].length / 4) % 3] + ' ');
+        const m = c.div.textContent.slice(0, c.off).match(/^( *)([-*]|[tT]\.) $/);
+        if (m) replaceIn(c.div, 0, c.off, m[1] + (m[2].length === 2 ? BOX : BUL[Math.floor(m[1].length / 4) % 3]) + ' ');
       }
     }
     afterEdit();

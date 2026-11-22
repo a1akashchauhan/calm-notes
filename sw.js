@@ -1,6 +1,6 @@
 /* CalmNotes service worker — makes the app open instantly and work offline.
    Bump VERSION whenever you change files, so visitors get the update. */
-const VERSION = 'calmnotes-v7';
+const VERSION = 'calmnotes-v8';
 const SHELL = [
   '/',
   '/index.html',

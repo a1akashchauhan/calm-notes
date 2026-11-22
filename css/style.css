@@ -44,6 +44,9 @@ main { max-width: 780px; margin: 0 auto; padding: 18vh 40px 45vh; }
   font: 400 clamp(19px, 0.6vw + 13px, 23px)/1.95 var(--mono); letter-spacing: .015em; word-spacing: .08em;
 }
 #pad > div { margin: 0; }
+#pad { font-variant-emoji: text; }          /* keep ☐ ☑ as quiet text, never emoji */
+#pad > div.done { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; text-decoration-color: rgba(205,200,191,.35); }
+#pad.over-box { cursor: pointer; }
 #pad.empty::before {
   content: attr(data-placeholder); position: absolute; left: 0; top: 0; color: var(--muted); pointer-events: none;
 }
