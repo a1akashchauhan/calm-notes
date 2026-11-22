@@ -5,7 +5,7 @@
   const $ = id => document.getElementById(id);
   const ed = $('pad'), meas = $('meas'), statusEl = $('status'), clearBtn = $('clear');
   const menuBtn = $('menuBtn'), menu = $('menu'), about = $('about');
-  const KEY = 'calmnotes.pad';
+  const KEY = 'calmnotes.pages', OLD_KEY = 'calmnotes.pad', MAX_PAGES = 9;
   const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
   const MOD = isMac ? '⌘' : 'ctrl';
 
@@ -16,21 +16,88 @@
       localStorage.setItem(t, t); localStorage.removeItem(t);
       return {
         ok: true,
-        get: () => localStorage.getItem(KEY) || '',
-        set: v => { try { localStorage.setItem(KEY, v); return true; } catch (e) { return false; } }
+        get: k => localStorage.getItem(k),
+        set: (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
       };
     } catch (e) {
-      return { ok: false, get: () => '', set: () => false };
+      return { ok: false, get: () => null, set: () => false };
     }
   })();
+
+  /* ---------------- pages ---------------- */
+  // A few quiet pages, one per context. Stored as plain text in this browser.
+  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  let pages = [], cur = 0;
+  function loadPages() {
+    try {
+      const d = JSON.parse(store.get(KEY));
+      if (d && Array.isArray(d.pages) && d.pages.length) {
+        pages = d.pages.filter(p => p && typeof p.text === 'string' && p.id).slice(0, MAX_PAGES);
+        cur = Math.max(0, pages.findIndex(p => p.id === d.current));
+        if (pages.length) return;
+      }
+    } catch (e) {}
+    pages = [{ id: newId(), text: store.get(OLD_KEY) || '' }];   // first visit, or the one-page version
+    cur = 0;
+  }
+  const serialize = () => JSON.stringify({ current: pages[cur].id, pages });
 
   let saveTimer = null, lastSaved = null;
   function save(showIt) {
     clearTimeout(saveTimer);
-    const text = getText();
-    if (text === lastSaved) { if (showIt) flash('saved'); return; }
-    if (store.set(text)) { lastSaved = text; if (showIt !== false) flash('saved'); }
-    else flash(store.ok ? 'storage is full — download a copy' : 'this browser won’t keep notes', true);
+    pages[cur].text = getText();
+    const data = serialize();
+    renderTabs();
+    if (data === lastSaved) { if (showIt === true) flash('saved'); return; }
+    if (store.set(KEY, data)) { lastSaved = data; if (showIt === undefined || showIt === true) flash('saved'); }
+    else flash(store.ok ? 'storage is full — download a copy' : 'this browser won\u2019t keep notes', true);
+  }
+
+  function pageLabel(t) {
+    const first = (t.split('\n').find(l => l.trim()) || '').trim();
+    const p = parse(first);
+    return (p ? p.body : first).trim() || 'untitled';
+  }
+  function renderTabs() {
+    const box = $('pages');
+    box.textContent = '';
+    if (pages.length > 1) pages.forEach((p, i) => {
+      const b = document.createElement('button');
+      const name = pageLabel(p.text);
+      b.className = 'page' + (i === cur ? ' on' : '');
+      b.textContent = name;
+      b.title = name + (i < 9 ? '  \u00b7  alt+' + (i + 1) : '');
+      if (i === cur) b.setAttribute('aria-current', 'page');
+      b.addEventListener('click', () => switchTo(i));
+      box.appendChild(b);
+    });
+    const add = document.createElement('button');
+    add.className = 'page add'; add.textContent = '+'; add.title = 'new page  \u00b7  alt+n';
+    add.setAttribute('aria-label', 'New page');
+    add.addEventListener('click', addPage);
+    box.appendChild(add);
+    const on = box.querySelector('.on');
+    if (on) on.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }
+  function switchTo(i) {
+    if (i === cur || i < 0 || i >= pages.length) { ed.focus(); return; }
+    pages[cur].text = getText();
+    const target = pages[i].id;
+    // A page you emptied is done: let it go quietly.
+    if (!pages[cur].text.trim() && pages.length > 1) pages.splice(cur, 1);
+    cur = pages.findIndex(p => p.id === target);
+    setText(pages[cur].text);
+    focusEnd(); disarm();
+    save('quiet');
+  }
+  function addPage() {
+    pages[cur].text = getText();
+    if (!pages[cur].text.trim()) { focusEnd(); flash('this page is still empty'); return; }
+    const empty = pages.findIndex(p => !p.text.trim());
+    if (empty >= 0) { switchTo(empty); return; }
+    if (pages.length >= MAX_PAGES) { flash(MAX_PAGES + ' pages is the limit \u2014 empty one to make room'); ed.focus(); return; }
+    pages.push({ id: newId(), text: '' });
+    switchTo(pages.length - 1);
   }
 
   let flashTimer;
@@ -297,14 +364,17 @@
   // Another tab changed the note: follow it while this tab isn't in use.
   window.addEventListener('storage', e => {
     if (e.key !== KEY || document.hasFocus()) return;
-    setText(e.newValue || ''); lastSaved = getText();
+    const id = pages[cur] && pages[cur].id;
+    loadPages();
+    const i = pages.findIndex(p => p.id === id); if (i >= 0) cur = i;
+    setText(pages[cur].text); lastSaved = serialize(); renderTabs();
   });
 
   /* ---------------- clear (undoable) ---------------- */
   let armTimer;
   clearBtn.addEventListener('click', () => {
     if (!clearBtn.classList.contains('arm')) {
-      clearBtn.classList.add('arm'); clearBtn.textContent = 'clear everything?';
+      clearBtn.classList.add('arm'); clearBtn.textContent = 'clear this page?';
       armTimer = setTimeout(disarm, 3000);
       return;
     }
@@ -343,7 +413,7 @@
     async copy() {
       const t = getText();
       try { await navigator.clipboard.writeText(t); flash('copied'); }
-      catch (e) { flash('couldn’t copy — select and copy instead'); }
+      catch (e) { flash('couldn\u2019t copy — select and copy instead'); }
     },
     download() {
       const d = new Date(), p2 = n => String(n).padStart(2, '0');
@@ -376,6 +446,14 @@
   /* ---------------- keyboard ---------------- */
   document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') { e.preventDefault(); save(true); return; }
+    // Page shortcuts. e.code, so Option-key characters on a Mac don't get in the way.
+    if (e.altKey && !e.metaKey && !e.ctrlKey) {
+      const c = e.code;
+      if (c === 'KeyN') { e.preventDefault(); addPage(); return; }
+      if (c === 'BracketRight') { e.preventDefault(); switchTo((cur + 1) % pages.length); return; }
+      if (c === 'BracketLeft') { e.preventDefault(); switchTo((cur - 1 + pages.length) % pages.length); return; }
+      if (/^Digit[1-9]$/.test(c)) { e.preventDefault(); switchTo(+c.slice(5) - 1); return; }
+    }
     if (e.key === 'Escape') {
       if (!about.hidden) closeAbout();
       else if (!menu.hidden) { closeMenu(); ed.focus(); }
@@ -384,10 +462,13 @@
   });
 
   /* ---------------- start ---------------- */
-  setText(store.get());
-  lastSaved = getText();
+  loadPages();
+  setText(pages[cur].text);
+  lastSaved = store.get(KEY);
+  renderTabs();
+  if (lastSaved === null) save('quiet');                  // carry a one-page note over into pages
   focusEnd();
-  if (!store.ok) flash('this browser won’t keep notes (private mode?)', true);
+  if (!store.ok) flash('this browser won\u2019t keep notes (private mode?)', true);
 
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
     window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));

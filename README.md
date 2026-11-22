@@ -4,10 +4,11 @@
 
 A calm, distraction-free notepad that lives in your browser. Open it and write.
 
-- One page. Nothing else on screen, and the little controls fade while you type.
+- One page at a time, nothing else on screen, and the little controls fade while you type.
+- Quiet pages for separate contexts: the faint `+` at the top (or **Alt+N**) adds one, each is named by its first line, **Alt+[ / ]** or **Alt+1…9** switches. Up to nine; a page you empty disappears when you leave it.
 - Saves as you type, in your own browser. There is no account and no server, and nothing you write leaves your device.
 - Google Docs–style lists: type `1. ` or `- `, press **Enter** to continue, **Tab** to nest (1 → a → i), **Shift+Tab** to un-nest, **Enter** on an empty item to step out.
-- `clear` (top-left, tap twice) starts a blank page, and **Ctrl/⌘+Z** brings it back.
+- `clear` (top-left, tap twice) empties the current page, and **Ctrl/⌘+Z** brings it back.
 - `···` menu: word count, copy all, download as `.txt`, install as an app.
 - Installable and works offline.
 

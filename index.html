@@ -32,7 +32,8 @@
 </head>
 <body>
   <header class="chrome">
-    <button id="clear" class="quiet" title="Start a blank page">clear</button>
+    <button id="clear" class="quiet" title="Clear this page">clear</button>
+    <nav id="pages" class="pages" aria-label="Pages"></nav>
     <button id="menuBtn" class="quiet" aria-haspopup="true" aria-expanded="false" title="Menu">···</button>
   </header>
 
@@ -56,12 +57,14 @@
     <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
       <h1 id="aboutTitle">CalmNotes</h1>
       <p class="muted">Just you, your thoughts. Nothing in between.</p>
-      <p>One page to think on. It saves as you type and lives only in this browser &mdash; nothing is sent anywhere, and there is no account.</p>
+      <p>A page for each thing on your mind &mdash; up to nine. Empty a page and it quietly goes away. It saves as you type and lives only in this browser &mdash; nothing is sent anywhere, and there is no account.</p>
       <dl>
         <dt><kbd>1.</kbd> or <kbd>-</kbd> then space</dt><dd>start a list</dd>
         <dt><kbd>Enter</kbd></dt><dd>next item &middot; on an empty item, step out</dd>
         <dt><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></dt><dd>nest / un-nest (1 &rarr; a &rarr; i)</dd>
         <dt><kbd>Ctrl/⌘</kbd>+<kbd>Z</kbd></dt><dd>undo, even after clear</dd>
+        <dt><kbd>Alt</kbd>+<kbd>N</kbd></dt><dd>new page (the faint <kbd>+</kbd> at the top)</dd>
+        <dt><kbd>Alt</kbd>+<kbd>[</kbd> / <kbd>]</kbd></dt><dd>previous / next page &middot; <kbd>Alt</kbd>+<kbd>1</kbd>&hellip;<kbd>9</kbd> to jump</dd>
         <dt><kbd>Ctrl/⌘</kbd>+<kbd>S</kbd></dt><dd>save now (it already autosaves)</dd>
         <dt><kbd>Esc</kbd></dt><dd>close menus</dd>
       </dl>
